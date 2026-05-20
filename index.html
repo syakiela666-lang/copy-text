@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gemini Tools - Minimalist Full</title>
+    <title>Copy Text Ai</title>
     
     <meta name="theme-color" content="#1a73e8">
     <link rel="manifest" href="./manifest.json">
@@ -13,10 +13,11 @@
     <script src="https://unpkg.com/turndown@7.1.2/dist/turndown.js"></script>
     
     <style>
-        /* CSS RESET & MOBILE APP MODE (FULL SCREEN) */
+        /* CSS RESET & MOBILE APP MODE */
         html, body { height: 100%; margin: 0; overflow: hidden; }
         body { 
-            font-family: system-ui, -apple-system, sans-serif; 
+            /* Tambahin font emoji di baris ini */
+            font-family: system-ui, -apple-system, sans-serif, "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"; 
             padding: 10px; box-sizing: border-box;
             background: #f0f2f5; color: #1f1f1f; 
             display: flex; justify-content: center; 
@@ -34,26 +35,26 @@
             border-radius: 12px; padding: 12px; margin-bottom: 12px;
         }
 
-        /* PANEL BAWAH MELAR MAKSIMAL DENGAN TRIK MIN-HEIGHT */
         .panel-bawah {
             flex: 1; display: flex; flex-direction: column; margin-bottom: 0;
             min-height: 0; 
         }
         
         textarea { 
+            /* Tambahin juga di textarea biar pas ngetik emojinya kelihatan */
             width: 100%; height: 120px; padding: 10px; background: #fafafa;
-            border: 1px solid #ccc; border-radius: 8px; font-family: monospace; 
+            border: 1px solid #ccc; border-radius: 8px; 
+            font-family: monospace, "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"; 
             font-size: 12px; margin-bottom: 10px; box-sizing: border-box; resize: none; 
         }
         textarea:focus { outline: none; border-color: #1a73e8; }
         
-        /* STRUKTUR TOMBOL SIMETRIS (KIRI - TENGAH - KANAN) */
+        /* STRUKTUR TOMBOL */
         .button-group { display: flex; align-items: center; width: 100%; }
         .left-buttons { display: flex; gap: 8px; flex: 1; justify-content: flex-start; }
         .center-buttons { display: flex; flex: 1; justify-content: center; }
         .right-buttons { display: flex; flex: 1; justify-content: flex-end; }
         
-        /* TOMBOL SINGSET ALL CAPS */
         button { 
             border: none; padding: 6px 12px; border-radius: 4px; 
             cursor: pointer; font-weight: bold; font-size: 11px; transition: 0.2s;
@@ -66,7 +67,7 @@
         .btn-danger { background-color: #fce8e6; color: #d93025; }
         .btn-danger:hover { background-color: #fad2cf; }
         
-        /* PREVIEW DENGAN SCROLLBAR AMAN */
+        /* PREVIEW BOX */
         #previewBox { 
             background: #fafafa; padding: 12px; border-radius: 8px; 
             flex: 1; overflow-y: auto; min-height: 0; 
@@ -74,20 +75,18 @@
             border: 1px solid #eee; margin: 0;
         }
         
-        /* DESIGN SCROLLBAR ESTETIK */
         #previewBox::-webkit-scrollbar { width: 6px; }
         #previewBox::-webkit-scrollbar-track { background: transparent; }
         #previewBox::-webkit-scrollbar-thumb { background: #cbd0d6; border-radius: 4px; }
         #previewBox::-webkit-scrollbar-thumb:hover { background: #aeb4ba; }
 
-        /* FORMATTING TEXT DI DALAM PREVIEW */
         #previewBox p { margin-top: 0; margin-bottom: 8px; }
         #previewBox code { background-color: #f1f3f4; padding: 2px 4px; border-radius: 4px; font-size: 11px; color: #d93025;}
         #previewBox pre { background-color: #202124; padding: 10px; border-radius: 6px; overflow-x: auto; color: #fff; margin-bottom: 8px;}
         #previewBox pre code { background-color: transparent; padding: 0; color: inherit; }
         hr { border: 0; height: 1px; background: #ddd; margin: 12px 0; }
         
-        /* TOAST NOTIFIKASI SUPER SINGSET DEAD CENTER */
+        /* TOAST NOTIFIKASI */
         #toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             opacity: 0; visibility: hidden; background: rgba(32, 33, 36, 0.9); color: white;
@@ -102,17 +101,15 @@
 
     <div class="container">
         <div class="glass-panel">
-            <textarea id="inputText" placeholder="Paste disini..."></textarea>
+            <textarea id="inputText" placeholder="Text ..."></textarea>
             <div class="button-group">
                 <div class="left-buttons">
                     <button class="btn-secondary" onclick="triggerLoad()">LOAD</button>
                     <button class="btn-secondary" onclick="exportToText()">SAVE</button>
                 </div>
-                
                 <div class="center-buttons">
                     <button class="btn-primary" onclick="copyRawMD()">COPY</button>
                 </div>
-                
                 <div class="right-buttons">
                     <button class="btn-danger" onclick="clearText()">CLEAR</button>
                 </div>
@@ -120,16 +117,15 @@
         </div>
 
         <div class="glass-panel panel-bawah">
-            <div id="previewBox">Preview akan muncul di sini...</div>
+            <div id="previewBox">Preview ...</div>
         </div>
     </div>
 
     <input type="file" id="fileInput" accept=".txt,.md" style="display: none;" onchange="loadTextFile(this)">
-
     <div id="toast">COPIED !</div>
 
     <script>
-        // REGISTRASI ENGINE GAIB PWA OFFLINE MODE
+        // 1. REGISTRASI PWA OFFLINE
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
@@ -142,78 +138,105 @@
         const fileInput = document.getElementById('fileInput');
         const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
 
-        // MEKANISME AUTOMATIS PREVIEW & AUTOSAVE MEMORI INTERNAL (0% DATA)
+        // TAMBAHIN KODE SAKTI INI DI SINI KACK:
+        marked.use({ breaks: true, gfm: true });
+
+        // 2. SISTEM AUTOSAVE & RENDER PREVIEW
         function updatePreview() {
             const currentText = inputText.value;
             localStorage.setItem('gemini_saved_text', currentText);
 
             if (currentText.trim() === "") {
-                previewBox.innerHTML = "Preview akan muncul di sini...";
+                previewBox.innerHTML = "Preview ...";
             } else {
                 previewBox.innerHTML = marked.parse ? marked.parse(currentText) : marked(currentText);
                 previewBox.scrollTop = previewBox.scrollHeight;
             }
         }
-
-        // SISTEM AUTO-STACK + SMART REGEX (PENCEGAH GLITCH GARIS MIRING NYASAR)
-        inputText.addEventListener('paste', (event) => {
-            event.preventDefault(); 
-            let clipboardHtml = event.clipboardData.getData('text/html');
-            let clipboardText = event.clipboardData.getData('text/plain');
-            
-            let finalMarkdown = clipboardHtml ? turndownService.turndown(clipboardHtml) : clipboardText;
-            
-            // --- EKSEKUSI SMART REGEX ---
-            if (finalMarkdown) {
-                // Hanya membuang backslash (\) jika terjebak di antara kata format miring/tebal dan tanda strip
-                finalMarkdown = finalMarkdown.replace(/([a-zA-Z0-9_*])\\([-_*])([a-zA-Z0-9])/g, '$1$2$3');
-            }
-
-            let existingText = inputText.value;
-
-            if (existingText.trim() !== "") {
-                inputText.value = existingText + "\n\n---\n\n" + finalMarkdown;
-            } else {
-                inputText.value = finalMarkdown;
-            }
-            updatePreview(); 
-            inputText.scrollTop = inputText.scrollHeight;
-            showToast("ADDED !");
-        });
-
         inputText.addEventListener('input', updatePreview);
 
-        // FITUR TOMBOL COPY
+        // 3. FUNGSI INTI: PEMBERSIH REGEX & TUMPUK TEKS (DIPAKAI OLEH SEMUA JALUR)
+        function processAndStackText(rawMarkdown, successMessage) {
+            if (!rawMarkdown) return;
+            
+            // 1. Smart Regex Lama: Cegah glitch garis miring
+            let cleanMarkdown = rawMarkdown.replace(/([a-zA-Z0-9_*])\\([-_*])([a-zA-Z0-9])/g, '$1$2$3');
+
+            // Logika Auto-Stacking
+            let existingText = inputText.value;
+            if (existingText.trim() !== "") {
+                inputText.value = existingText + "\n\n---\n\n" + cleanMarkdown;
+            } else {
+                inputText.value = cleanMarkdown;
+            }
+            
+            updatePreview(); 
+            inputText.scrollTop = inputText.scrollHeight;
+            showToast(successMessage);
+        }
+
+        // 4. JALUR A: PASTE MANUAL
+        inputText.addEventListener('paste', (event) => {
+            event.preventDefault(); 
+            let html = event.clipboardData.getData('text/html');
+            let plain = event.clipboardData.getData('text/plain');
+            let markdown = html ? turndownService.turndown(html) : plain;
+            processAndStackText(markdown, "PASTED !");
+        });
+
+        // 5. JALUR B: DRAG & DROP DARI SPLIT SCREEN
+        inputText.addEventListener('dragover', (event) => event.preventDefault()); // Wajib ada
+        inputText.addEventListener('drop', (event) => {
+            event.preventDefault();
+            let html = event.dataTransfer.getData('text/html');
+            let plain = event.dataTransfer.getData('text/plain');
+            let markdown = html ? turndownService.turndown(html) : plain;
+            processAndStackText(markdown, "DROPPED !");
+        });
+
+        // 6. JALUR C: SHARE TARGET DARI SISTEM ANDROID (SAAT APLIKASI DIBUKA)
+        window.addEventListener('load', () => {
+            // Tarik data memori lama
+            const savedData = localStorage.getItem('gemini_saved_text');
+            if (savedData) inputText.value = savedData;
+            
+            // Cek apakah web dibuka karena ada lemparan teks dari menu "Share"
+            const parsedUrl = new URL(window.location.href);
+            const sharedText = parsedUrl.searchParams.get('text') || parsedUrl.searchParams.get('url');
+            
+            if (sharedText) {
+                processAndStackText(sharedText, "SHARED !");
+                // Bersihkan URL bar biar teks gak duplikat saat web di-refresh
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                updatePreview();
+            }
+        });
+
+        // 7. FUNGSI TOMBOL-TOMBOL KONTROL
         function copyRawMD() {
             const rawText = inputText.value;
             if(!rawText) return;
             navigator.clipboard.writeText(rawText).then(() => { showToast("COPIED !"); });
         }
 
-        // FITUR TOMBOL CLEAR (+ SAFE GUARD WARNING)
         function clearText() {
-            if(confirm("Hapus semua?")) {
+            if(confirm("Hapus semua tumpukan riset?")) {
                 inputText.value = "";
                 updatePreview(); 
             }
         }
 
-        // FITUR TOMBOL SAVE (EKSPOR JADI .TXT BERSIH)
         function exportToText() {
             const text = inputText.value;
             if(!text) return;
             const blob = new Blob([text], { type: 'text/plain' });
             const anchor = document.createElement('a');
-            anchor.download = 'backup_chat.txt';
+            anchor.download = 'riset_degen_tools.txt';
             anchor.href = window.URL.createObjectURL(blob);
-            anchor.target = '_blank';
-            anchor.style.display = 'none';
-            document.body.appendChild(anchor);
             anchor.click();
-            document.body.removeChild(anchor);
         }
 
-        // FITUR TOMBOL LOAD (IMPOR & LANJUT KETIK)
         function triggerLoad() { fileInput.click(); }
 
         function loadTextFile(input) {
@@ -224,12 +247,12 @@
                 inputText.value = e.target.result;
                 updatePreview();
                 fileInput.value = ""; 
-                showToast("ADDED !");
+                showToast("LOADED !");
             };
             reader.readAsText(file);
         }
 
-        // SISTEM TOAST POPUP ANIMATION
+        // 8. SISTEM TOAST POPUP ANIMATION
         let toastTimeout;
         function showToast(message) {
             toast.textContent = message;
@@ -237,13 +260,6 @@
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 1200); 
         }
-
-        // KETIKA HALAMAN DIBUKA: BALIKIN DATA TERAKHIR JIKA ADA
-        window.addEventListener('load', () => {
-            const savedData = localStorage.getItem('gemini_saved_text');
-            if (savedData) inputText.value = savedData;
-            updatePreview();
-        });
     </script>
 </body>
 </html>
