@@ -41,11 +41,11 @@
         }
         
         textarea { 
-            /* Tambahin juga di textarea biar pas ngetik emojinya kelihatan */
-            width: 100%; height: 120px; padding: 10px; background: #fafafa;
+            width: 100%; height: 120px; min-height: 80px; padding: 10px; background: #fafafa;
             border: 1px solid #ccc; border-radius: 8px; 
             font-family: monospace, "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"; 
-            font-size: 12px; margin-bottom: 10px; box-sizing: border-box; resize: none; 
+            font-size: 12px; margin-bottom: 10px; box-sizing: border-box; 
+            resize: vertical; /* SIHIR 1: BIAR BISA DITARIK KE BAWAH */
         }
         textarea:focus { outline: none; border-color: #1a73e8; }
         
@@ -95,6 +95,24 @@
             transition: opacity 0.15s ease, visibility 0.15s ease; z-index: 1000;
         }
         #toast.show { opacity: 1; visibility: visible; }
+		
+		/* SIHIR 2: AUTO-SPLIT MODE PC & TABLET */
+        @media (min-width: 768px) {
+            .container { 
+                flex-direction: row; /* Ubah susunan jadi Kiri-Kanan */
+                max-width: 1400px; /* Bikin layarnya jauh lebih lebar */
+            }
+            .glass-panel { 
+                flex: 1; /* Bagi layarnya jadi 50:50 seimbang */
+                display: flex; flex-direction: column; 
+                margin-bottom: 0;
+            }
+            textarea { 
+                flex: 1; /* Di PC, kotaknya otomatis melar mentok penuhin layar! */
+                height: auto; 
+                resize: none; /* Tombol tarik dimatiin karena kotaknya udah full screen */
+            }
+        }
     </style>
 </head>
 <body>
